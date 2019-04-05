@@ -11,6 +11,7 @@
   (:export :map-routes
            :*allow-head*
            :ht-acceptor
+           :ht-ssl-acceptor
            :add-route))
 
 (in-package :ht-routes)
@@ -99,6 +100,9 @@
 (defclass ht-acceptor (acceptor)
   ())
 
+(defclass ht-ssl-acceptor (ssl-acceptor)
+  ())
+
 (defun defunction (func)
   (if (fboundp func)
       func
@@ -106,6 +110,12 @@
           (format nil "Handler not implemented!"))))
 
 (defmethod acceptor-dispatch-request ((acceptor ht-acceptor) request)
+  (dispatch-request acceptor request))
+
+(defmethod acceptor-dispatch-request ((acceptor ht-ssl-acceptor) request)
+  (dispatch-request acceptor request))
+
+(defmethod dispatch-request (acceptor request)
   (loop for route in *routes*
      for (action params) = (match-handler route request)
      when action return (if params
